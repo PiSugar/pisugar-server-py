@@ -18,6 +18,18 @@ Python test code
 
     test_via_tcp(<YOUR HOST ADDR>)
 
+Python example
+
+    from pisugar import *
+    
+    conn, event_conn = connect_tcp('raspberrypi.local')
+    s = PiSugarServer(conn, event_conn)
+
+    s.register_single_tap_handler(lambda: print('single'))
+    s.register_double_tap_handler(lambda: print('double'))
+
+    version = s.get_version()
+
 ## License
 
-Apache License
+Apache License Version 2.0
