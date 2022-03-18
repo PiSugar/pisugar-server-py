@@ -1,14 +1,29 @@
 from unicodedata import name
 import setuptools
 
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
+
 setuptools.setup(
     name="pisugar",
     version="0.0.1",
-    description="PiSugar server api for python",
+    description="PiSugar server python api",
     author="PiSugar Team",
-    author_email="pisugar.zero@gmail.com",
-    url="http://www.pisugar.com",
-    license="APACHE",
+    author_email="app@pisugar.com",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://github.com/PiSugar/pisugar-server-py",
+    project_urls={
+        "Official Website": "https://www.pisugar.com",
+        "Bug Tracker": "https://github.com/pypa/sampleproject/issues",
+    },
+    license="Apache",
     keywords="PiSugar Raspberry Pi",
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: Apache License",
+        "Operating System :: OS Independent",
+    ],
     packages=setuptools.find_packages(),
+    python_requires=">=3.6",
 )

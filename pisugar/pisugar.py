@@ -9,7 +9,11 @@ from datetime import datetime
 
 def connect_domain_socket(file="/tmp/pisugar-server.sock"):
     """Connect pisugar server via unix domain socket file"""
-    pass
+    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    conn = s.connect(file)
+    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    event_conn = s.connect(file)
+    return (conn, event_conn)
 
 
 def connect_tcp(host="127.0.0.1", port=8423, timeout: float = None) -> tuple[socket.socket, socket.socket]:
@@ -19,9 +23,9 @@ def connect_tcp(host="127.0.0.1", port=8423, timeout: float = None) -> tuple[soc
     return (conn, event_conn)
 
 
-def connect_ws(host="127.0.0.1", port=8421, path="/ws", username=None, password=None):
-    """Connect pisugar server via websocket"""
-    pass
+# def connect_ws(host="127.0.0.1", port=8421, path="/ws", username=None, password=None):
+#     """Connect pisugar server via websocket"""
+#     pass
 
 
 def _get_parse_str(resp: bytes) -> str:
@@ -50,6 +54,11 @@ class PiSugarServer:
     """PiSugar Server API"""
 
     def __init__(self, conn: socket.socket, event_conn: None):
+        """Init api connection
+        
+        conn: normal connection
+        event_conn: event connection, could be None
+        """
         self._conn = conn
         if event_conn:
             self._single_tap_handlers = []
@@ -62,16 +71,19 @@ class PiSugarServer:
             self._event_thread.start()
 
     def register_single_tap_handler(self, callback):
+        """Register single tap event handler"""
         if not self._event_conn:
             raise Exception("Event connection is not specified")
         self._single_tap_handlers.append(callback)
 
     def register_double_tap_handler(self, callback):
+        """Register double tap event handler"""
         if not self._event_conn:
             raise Exception("Event connection is not specified")
         self._double_tap_handlers.append(callback)
 
     def register_long_tap_handler(self, callback):
+        """Register long tap event handler"""
         if not self._event_conn:
             raise Exception("Event connection is not specified")
         self._long_tap_handlers.append(callback)
@@ -343,6 +355,8 @@ class PiSugarServer:
         time: date part (yyyy/MM/dd) is ignored
         weekday_repeat: bit0-6 is Sunday to Saturday
         """
+        if time.tzinfo is None:
+            time = time.astimezone()
         args = [time.isoformat().encode(
             'utf-8'), str(weekday_repeat).encode('utf-8')]
         return self._set_and_assert(b'rtc_alarm_set', *args)
@@ -381,7 +395,17 @@ class PiSugarServer:
         return self._set_and_assert(b'set_anti_mistouch', arg)
 
 
+def _print_wait(*args):
+    print(*args)
+    sleep(0.2)
+
 def test_via_tcp(host="localhost", port=8423, test_set=False):
+    """Test pisugar api
+    
+    host: pisugar host
+    port: pisugar tcp port
+    test_set: test set_* functions
+    """
     conn, event_conn = connect_tcp(host, port)
     pisugar = PiSugarServer(conn, event_conn)
 
@@ -429,39 +453,35 @@ def test_via_tcp(host="localhost", port=8423, test_set=False):
     print('get_temperature', pisugar.get_temperature())
 
     if test_set:
-        print('set_battery_charging_range 60 80',
+        _print_wait('set_battery_charging_range 60 80',
               pisugar.set_battery_charging_range(60, 80))
-        print('set_battery_input_protect False',
+        _print_wait('set_battery_input_protect False',
               pisugar.set_battery_input_protect(False))
-        print('set_battery_output True', pisugar.set_battery_output(True))
-        print('set_battery_full_charge_duration 120',
+        _print_wait('set_battery_output True', pisugar.set_battery_output(True))
+        _print_wait('set_battery_full_charge_duration 120',
               pisugar.set_battery_full_charge_duration(120))
-        print('set_battery_allow_charging True',
+        _print_wait('set_battery_allow_charging True',
               pisugar.set_battery_allow_charging(True))
-        print('set_battery_safe_shutdown_level 20',
+        _print_wait('set_battery_safe_shutdown_level 20',
               pisugar.set_battery_safe_shutdown_level(20))
-        print('set_battery_safe_shutdown_delay 3',
+        _print_wait('set_battery_safe_shutdown_delay 3',
               pisugar.set_battery_safe_shutdown_delay(3))
-        print('set_battery_auto_power_on False',
+        _print_wait('set_battery_auto_power_on False',
               pisugar.set_battery_auto_power_on(False))
-        print('set_battery_soft_poweroff False',
+        _print_wait('set_battery_soft_poweroff False',
               pisugar.set_battery_soft_poweroff(False))
-        print('set_battery_input_protect False',
+        _print_wait('set_battery_input_protect False',
               pisugar.set_battery_input_protect(False))
 
-        print('rtc_pi2rtc', pisugar.rtc_pi2rtc())
-        print('rtc_rtc2pi', pisugar.rtc_rtc2pi())
-        print('rtc_web', pisugar.rtc_web())
-        print('rtc_alarm_set', pisugar.rtc_alarm_set(
+        _print_wait('rtc_pi2rtc', pisugar.rtc_pi2rtc())
+        _print_wait('rtc_rtc2pi', pisugar.rtc_rtc2pi())
+        _print_wait('rtc_web', pisugar.rtc_web())
+        _print_wait('rtc_alarm_set', pisugar.rtc_alarm_set(
             datetime(2000, 1, 1, 12, 0, 0), 127))
-        print('rtc_alarm_disable', pisugar.rtc_alarm_disable())
-        print('rtc_adjust_ppm', pisugar.rtc_adjust_ppm(0))
+        _print_wait('rtc_alarm_disable', pisugar.rtc_alarm_disable())
+        _print_wait('rtc_adjust_ppm', pisugar.rtc_adjust_ppm(0))
 
-        print("set_tap_enable", pisugar.set_tap_enable('single', False))
-        print("set_tap_shell", pisugar.set_button_shell('single', ''))
+        _print_wait("set_tap_enable", pisugar.set_tap_enable('single', False))
+        _print_wait("set_tap_shell", pisugar.set_button_shell('single', ''))
 
-        print("set_anti_mistouch True", pisugar.set_anti_mistouch(True))
-
-
-if __name__ == '__main__':
-    test_via_tcp('raspberrypi.local')
+        _print_wait("set_anti_mistouch True", pisugar.set_anti_mistouch(True))
