@@ -17,11 +17,11 @@ setuptools.setup(
         "Official Website": "https://www.pisugar.com",
         "Bug Tracker": "https://github.com/pypa/sampleproject/issues",
     },
-    license="Apache",
+    license="Apache License 2.0",
     keywords="PiSugar Raspberry Pi",
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: Apache License",
+        "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
     ],
     packages=setuptools.find_packages(),
