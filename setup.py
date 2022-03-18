@@ -15,7 +15,7 @@ setuptools.setup(
     url="https://github.com/PiSugar/pisugar-server-py",
     project_urls={
         "Official Website": "https://www.pisugar.com",
-        "Bug Tracker": "https://github.com/pypa/sampleproject/issues",
+        "Bug Tracker": "https://github.com/PiSugar/pisugar-server-py/issues",
     },
     license="Apache License 2.0",
     keywords="PiSugar Raspberry Pi",
