@@ -30,6 +30,8 @@ Python example
 
     version = s.get_version()
 
+NOTE: The tap event callback should not block the thread
+
 ## License
 
 Apache License Version 2.0
