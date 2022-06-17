@@ -55,7 +55,7 @@ class PiSugarServer:
 
     def __init__(self, conn: socket.socket, event_conn: None):
         """Init api connection
-        
+
         conn: normal connection
         event_conn: event connection, could be None
         """
@@ -219,6 +219,10 @@ class PiSugarServer:
         """Is battery soft poweroff enabled (pisugar 3)"""
         return self._get_and_parse(b'soft_poweroff', _get_parse_bool)
 
+    def get_battery_soft_poweroff_shell(self):
+        """Get soft poweroff shell script"""
+        return self._get_and_parse(b"soft_poweroff_shell", _get_parse_str)
+
     def get_system_time(self):
         """Get os datetime"""
         s = self._get_and_parse(b'system_time', _get_parse_str)
@@ -333,6 +337,10 @@ class PiSugarServer:
         arg = b'true' if enable else b'false'
         return self._set_and_assert(b'set_soft_poweroff', arg)
 
+    def set_battery_soft_poweroff_shell(self, script: str):
+        """Set script to be executed when soft poweroff is trigged."""
+        return self._set_and_assert(b'set_soft_poweroff_shell', script.encode("utf-8"))
+
     def set_battery_input_protect(self, enable: bool):
         arg = b'true' if enable else b'false'
         return self._set_and_assert(b'set_input_protect', arg)
@@ -399,9 +407,10 @@ def _print_wait(*args):
     print(*args)
     sleep(0.2)
 
+
 def test_via_tcp(host="localhost", port=8423, test_set=False):
     """Test pisugar api
-    
+
     host: pisugar host
     port: pisugar tcp port
     test_set: test set_* functions
@@ -423,17 +432,14 @@ def test_via_tcp(host="localhost", port=8423, test_set=False):
     print('get_battery_allow_charging', pisugar.get_battery_allow_charging())
     print('get_battery_charging_range', pisugar.get_battery_charging_range())
     print('get_battery_charging', pisugar.get_battery_charging())
-    print('get_battery_input_protect_enabled',
-          pisugar.get_battery_input_protect_enabled())
+    print('get_battery_input_protect_enabled', pisugar.get_battery_input_protect_enabled())
     print('get_battery_output_enabled', pisugar.get_battery_output_enabled())
-    print('get_battery_full_charge_duration',
-          pisugar.get_battery_full_charge_duration())
-    print('get_battery_safe_shutdown_level',
-          pisugar.get_battery_safe_shutdown_level())
-    print('get_battery_safe_shutdown_delay',
-          pisugar.get_battery_safe_shutdown_delay())
+    print('get_battery_full_charge_duration', pisugar.get_battery_full_charge_duration())
+    print('get_battery_safe_shutdown_level', pisugar.get_battery_safe_shutdown_level())
+    print('get_battery_safe_shutdown_delay', pisugar.get_battery_safe_shutdown_delay())
     print('get_battery_auto_power_on', pisugar.get_battery_auto_power_on())
     print('get_battery_soft_poweroff', pisugar.get_battery_soft_poweroff())
+    print('get_battery_soft_poweroff_shell', pisugar.get_battery_soft_poweroff_shell())
     print('get_battery_input_protect', pisugar.get_battery_input_protect())
 
     print('get_system_time', pisugar.get_system_time())
@@ -453,31 +459,22 @@ def test_via_tcp(host="localhost", port=8423, test_set=False):
     print('get_temperature', pisugar.get_temperature())
 
     if test_set:
-        _print_wait('set_battery_charging_range 60 80',
-              pisugar.set_battery_charging_range(60, 80))
-        _print_wait('set_battery_input_protect False',
-              pisugar.set_battery_input_protect(False))
+        _print_wait('set_battery_charging_range 60 80', pisugar.set_battery_charging_range(60, 80))
+        _print_wait('set_battery_input_protect False', pisugar.set_battery_input_protect(False))
         _print_wait('set_battery_output True', pisugar.set_battery_output(True))
-        _print_wait('set_battery_full_charge_duration 120',
-              pisugar.set_battery_full_charge_duration(120))
-        _print_wait('set_battery_allow_charging True',
-              pisugar.set_battery_allow_charging(True))
-        _print_wait('set_battery_safe_shutdown_level 20',
-              pisugar.set_battery_safe_shutdown_level(20))
-        _print_wait('set_battery_safe_shutdown_delay 3',
-              pisugar.set_battery_safe_shutdown_delay(3))
-        _print_wait('set_battery_auto_power_on False',
-              pisugar.set_battery_auto_power_on(False))
-        _print_wait('set_battery_soft_poweroff False',
-              pisugar.set_battery_soft_poweroff(False))
-        _print_wait('set_battery_input_protect False',
-              pisugar.set_battery_input_protect(False))
+        _print_wait('set_battery_full_charge_duration 120', pisugar.set_battery_full_charge_duration(120))
+        _print_wait('set_battery_allow_charging True', pisugar.set_battery_allow_charging(True))
+        _print_wait('set_battery_safe_shutdown_level 20', pisugar.set_battery_safe_shutdown_level(20))
+        _print_wait('set_battery_safe_shutdown_delay 3', pisugar.set_battery_safe_shutdown_delay(3))
+        _print_wait('set_battery_auto_power_on False', pisugar.set_battery_auto_power_on(False))
+        _print_wait('set_battery_soft_poweroff False', pisugar.set_battery_soft_poweroff(False))
+        _print_wait('set_battery_soft_poweroff_shell poweroff', pisugar.set_battery_soft_poweroff_shell("poweroff"))
+        _print_wait('set_battery_input_protect False', pisugar.set_battery_input_protect(False))
 
         _print_wait('rtc_pi2rtc', pisugar.rtc_pi2rtc())
         _print_wait('rtc_rtc2pi', pisugar.rtc_rtc2pi())
         _print_wait('rtc_web', pisugar.rtc_web())
-        _print_wait('rtc_alarm_set', pisugar.rtc_alarm_set(
-            datetime(2000, 1, 1, 12, 0, 0), 127))
+        _print_wait('rtc_alarm_set', pisugar.rtc_alarm_set(datetime(2000, 1, 1, 12, 0, 0), 127))
         _print_wait('rtc_alarm_disable', pisugar.rtc_alarm_disable())
         _print_wait('rtc_adjust_ppm', pisugar.rtc_adjust_ppm(0))
 
